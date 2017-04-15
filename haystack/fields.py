@@ -147,13 +147,19 @@ class SearchField(object):
         if current_objects is None:
             return []
 
+        is_iterable = True
+        try:
+            iter_current_objects = iter(current_objects)
+        except TypeError:
+            is_iterable = False
+
         if hasattr(current_objects, 'all'):
             # i.e, Django ManyToMany relationships
             if ismethod(current_objects.all):
                 return current_objects.all()
             return []
 
-        elif not hasattr(current_objects, '__iter__'):
+        elif not is_iterable:
             current_objects = [current_objects]
 
         return current_objects
