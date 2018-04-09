@@ -8,8 +8,8 @@ from threading import Thread
 
 from django.test import TestCase
 from django.utils.six.moves import queue
-from test_haystack.core.models import (AFifthMockModel, AThirdMockModel, MockModel, ManyToManyLeftSideModel,
-                                       ManyToManyRightSideModel)
+from test_haystack.core.models import (AFifthMockModel, AThirdMockModel, ManyToManyLeftSideModel,
+                                       ManyToManyRightSideModel, MockModel)
 
 from haystack import connection_router, connections, indexes
 from haystack.exceptions import SearchFieldError
@@ -270,7 +270,6 @@ class SearchIndexTestCase(TestCase):
 
         # Restore the original attribute
         self.mi.__class__.get_updated_field = old_guf
-
 
     def test_prepare(self):
         mock = MockModel()
@@ -582,6 +581,11 @@ class TextReadQuerySetTestSearchIndex(indexes.SearchIndex, indexes.Indexable):
         return self.get_model().objects.complete_set()
 
 
+class ModelWithManyToManyFieldModelSearchIndex(indexes.ModelSearchIndex):
+    def get_model(self):
+        return ManyToManyLeftSideModel
+
+
 class ModelSearchIndexTestCase(TestCase):
     def setUp(self):
         super(ModelSearchIndexTestCase, self).setUp()
@@ -591,6 +595,7 @@ class ModelSearchIndexTestCase(TestCase):
         self.emsi = ExcludesModelSearchIndex()
         self.fwomsi = FieldsWithOverrideModelSearchIndex()
         self.yabmsi = YetAnotherBasicModelSearchIndex()
+        self.m2mmsi = ModelWithManyToManyFieldModelSearchIndex()
 
     def test_basic(self):
         self.assertEqual(len(self.bmsi.fields), 4)
@@ -624,6 +629,7 @@ class ModelSearchIndexTestCase(TestCase):
         self.assertTrue(isinstance(self.emsi.fields['pub_date'], indexes.DateTimeField))
         self.assertTrue('text' in self.emsi.fields)
         self.assertTrue(isinstance(self.emsi.fields['text'], indexes.CharField))
+        self.assertNotIn('related_models', self.m2mmsi.fields)
 
     def test_fields_with_override(self):
         self.assertEqual(len(self.fwomsi.fields), 3)

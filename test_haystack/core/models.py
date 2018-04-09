@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime
+import uuid
 
 from django.db import models
 
@@ -16,7 +17,7 @@ class MockModel(models.Model):
     author = models.CharField(max_length=255)
     foo = models.CharField(max_length=255, blank=True)
     pub_date = models.DateTimeField(default=datetime.datetime.now)
-    tag = models.ForeignKey(MockTag)
+    tag = models.ForeignKey(MockTag, models.CASCADE)
 
     def __unicode__(self):
         return self.author
@@ -24,6 +25,12 @@ class MockModel(models.Model):
     def hello(self):
         return 'World!'
 
+class UUIDMockModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    characteristics = models.TextField()
+
+    def __unicode__(self):
+        return str(self.id)
 
 class AnotherMockModel(models.Model):
     author = models.CharField(max_length=255)
@@ -50,12 +57,14 @@ class AFourthMockModel(models.Model):
     def __unicode__(self):
         return self.author
 
+
 class SoftDeleteManager(models.Manager):
     def get_queryset(self):
         return super(SoftDeleteManager, self).get_queryset().filter(deleted=False)
 
     def complete_set(self):
         return super(SoftDeleteManager, self).get_queryset()
+
 
 class AFifthMockModel(models.Model):
     author = models.CharField(max_length=255)
@@ -66,6 +75,7 @@ class AFifthMockModel(models.Model):
     def __unicode__(self):
         return self.author
 
+
 class ASixthMockModel(models.Model):
     name = models.CharField(max_length=255)
     lat = models.FloatField()
@@ -73,6 +83,7 @@ class ASixthMockModel(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class ScoreMockModel(models.Model):
     score = models.CharField(max_length=10)
@@ -97,4 +108,4 @@ class OneToManyLeftSideModel(models.Model):
 
 
 class OneToManyRightSideModel(models.Model):
-    left_side = models.ForeignKey(OneToManyLeftSideModel, related_name='right_side')
+    left_side = models.ForeignKey(OneToManyLeftSideModel, models.CASCADE, related_name='right_side')
